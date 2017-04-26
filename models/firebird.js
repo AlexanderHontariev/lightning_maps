@@ -14,16 +14,16 @@ var options = {};
     options.pageSize = 4096; 
 
 
+var params = {
+    timeStart: '',
+    timeEnd:   '',
+    type1: 4,
+    type2: 4
+};
+
 var date = new Date();
 
 exports.get = function(req, res, next){
-
-    var params = {
-        timeStart: '',
-        timeEnd:   '',
-        type1: 4, //при 4 получаем пустой ответ
-        type2: 4
-    };
 
      if(req.route.path == '/' || req.route.path == '/mainReq'){
           params.timeStart = getTimeStart(new Date());
@@ -32,24 +32,25 @@ exports.get = function(req, res, next){
           params.type2 = 1;
         } else if(req.route.path == '/request'){
             var urlParse = url.parse(req.url, true);
+            console.log(urlParse);
             if((urlParse.query.intra || urlParse.query.toGround) && urlParse.query.datetime) {
-                console.log(urlParse.query);
                 if (urlParse.query.intra) {
                     params.type1 = urlParse.query.intra;
                 }
                 if (urlParse.query.toGround) {
                     params.type2 = urlParse.query.toGround;
-
                 }
+                console.log(urlParse.query.datetime);
                 params.timeEnd = new Date(urlParse.query.datetime);
                 params.timeStart = getTimeStart(params.timeEnd);
+                console.log(params.timeEnd);
             } else { 
                 params.type1 = 4;  //получаем пустой ответ
                 params.type2 = 4;
                 params.timeStart = 0;
                 params.timeEnd = 0;
             }
-        }
+        } 
 
 
     async.waterfall([
@@ -80,7 +81,10 @@ exports.get = function(req, res, next){
             res.json(result);
         }
     });
+    
 }
+
+
 
 function getTimeStart(timeEnd){
  var timeStart = new Date(timeEnd.getTime()-7200000); //2 часа в мс

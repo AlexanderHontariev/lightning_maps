@@ -12,7 +12,7 @@
 	<script src="js/jquery.js"></script>
 	<script src="lib/datetimepicker/build/jquery.datetimepicker.full.min.js"></script>
 
-	<script src="lib/leaflet/leaflet.js" type="text/javascript"></script>
+	<script src="http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.js"></script>
 	<!--[if lte IE 8]>
     	<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.ie.css" />
     <![endif]-->
@@ -23,22 +23,19 @@
 </head>
 <body>
 	<div class=link><a href="/">Назад</a></div>
-	<div class="form-wrapper">
-		<div class="form">	
-			<form id="th_type" action="" method="get">
-	            <input type="checkbox" name="intra" id="intra" value="1" checked>
-				<label for="intra">Intra Cloud</label>
-				<input type="checkbox" name="toGround" id="toGround" value="0" checked>
-				<label for="toGround">Cloud-to-Ground</label>
-					
-				<input id="datetimepicker" name="datetime" type="text" placeholder="Введите дату"></input>
-				<input type="submit" value="Получить данные"></input>
-				<button id="multik" type="button">Анимировать</button>
-			</form>
-		</div>
-		<div class="date"></div>
-		<div id="mapid"></div>
+	<div class="form">	
+		<form id="th_type" action="" method="get">
+            <input type="checkbox" name="intra" id="intra" value="1" checked>
+			<label for="intra">Intra Cloud</label>
+			<input type="checkbox" name="toGround" id="toGround" value="0" checked>
+			<label for="toGround">Cloud-to-Ground</label>
+				
+			<input id="datetimepicker" name="datetime" type="text" placeholder="Введите дату"></input>
+			<input type="submit" value="Получить данные"></input>
+		</form>
 	</div>
+	<div class="date"></div>
+	<div id="mapid"></div>
 	
 	<script>
 
@@ -54,7 +51,7 @@
 
 	var baseMaps = {
   			"Dark": dark,
-    		"Streets": outdoor,
+    		"Streets": osm,
     		"Satellite": satellite
 		};
 
@@ -84,7 +81,7 @@
 
 	var markerGroup = L.layerGroup();
 
-	$("#th_type").submit(function() {
+	$("#th_type").submit(function(){
 		var str =$(this).serialize();
 		$.ajax({
 			url: '/request',
@@ -109,45 +106,6 @@
 		});
 		return false;
 	});
-
-
-	$("#multik").click(function(){
-		var currentTime = Date.parse($("#datetimepicker").val()) + new Date($("#datetimepicker").val()).getTimezoneOffset()*60000;
-		var toClear = setInterval(function() {
-			currentTime += 600000;
-			timeChanger(currentTime);
-		}, 16000);
-	});
-
-	function timeChanger(curTime) {
-		var timeToSend = new Date(curTime);
-		var data = 'intra=' + $('#intra').val() + '&toGround=' + $('#toGround').val() + '&datetime=' + timeToSend;
-
-		$.ajax({
-			url: '/request',
-			data: data,
-           	cache: false,
-           	contentType: false,
-           	processData: false,
-			type: "get",
-			success: function(data, status) {
-				markerGroup.clearLayers();
-				var date = timeToSend;
-				if ( data.length != 0 ) {
-					for (var i=0; i < data.length; i++){
-					lat=data[i].LATITUDE;
-					long=data[i].LONGITUDE;
-					L.marker([lat, long],{icon: getIconType(data[i].TIMES, date.toISOString(), data[i].PEAKCURRENT)}).addTo(markerGroup);
-					}
-				}
-				markerGroup.addTo(map);
-			}
-		});
-
-	}
-
-
-
 
 
 

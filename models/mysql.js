@@ -63,6 +63,11 @@ exports.get = function(req, res, next){
 
 }
 
+
+
+
+
+
 function getTimeStart(timeEnd){
  var timeStart = new Date(timeEnd.getTime()-7200000);  //2часа в милисекундах, 
  return timeStart;

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>Thunder test page</title>
+
+	<link rel="stylesheet" href="tmp/style.css" />
+	<link rel="stylesheet" href="lib/leaflet/leaflet.css" />
+	<link rel="stylesheet" type="text/css" href="lib/datetimepicker/jquery.datetimepicker.css"/ >
+	
+
+	<script src="js/jquery.js"></script>
+	<script src="lib/datetimepicker/build/jquery.datetimepicker.full.min.js"></script>
+
+	<script src="http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.js"></script>
+	<!--[if lte IE 8]>
+    	<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.ie.css" />
+    <![endif]-->
+	<script src="lib/Leaflet.CanvasLayer/leaflet_canvas_layer.js" type="text/javascript"></script>
+	
+	<script src="js/iconType.js"></script>
+	<script src="js/mapStyle.js"></script>
+
+</head>
+
+<body>
+<div id="now">
+	<div id="date"></div>
+	<div class="map" id="mapid"></div>
+</div><!-- 
+Этот комментарий убирает отступы между инлайн-блоковыми элементами.
+--><div id="history">		
+	<div class="form">	
+		<form id="th_type" action="" method="get">
+            <input type="checkbox" name="c-to-c" id="c-to-c" value="1" checked>
+			<label for="c-to-g">Intra Cloud</label>
+			<input type="checkbox" name="c-to-g" id="c-to-g" value="0" checked>
+			<label for="c-to-g">Cloud-to-Ground</label>
+				
+			<input id="datetimepicker" name="datetime" type="text"></input>
+			<input type="submit" value="Получить данные"></input>
+		</form>
+	</div>
+	<div class="map" id="mapid2"></div>
+	<div class="info-1">
+		<div id="history-date"></div>
+	</div>
+	</div>
+	
+	<script>
+
+	var date = new Date('{{date}}');
+	document.getElementById('date').innerHTML = date.toUTCString();
+
+	var map = L.map('mapid', {
+			center: [49.00, 31.00],
+			zoom: 6,
+			minZoom:5,
+			maxZoom:12,
+			maxBounds:([[20, -30],[70,90]]),
+			layers: [satellite]
+		});
+	var histMap = L.map('mapid2', {
+			center: [49.00, 31.00],
+			zoom: 6,
+			minZoom:5,
+			maxZoom:12,
+			maxBounds:([[20, -30],[70,90]]),
+			layers: [satellite]
+		});
+
+	var baseMaps = {
+  			"Dark": dark,
+    		"Streets": osm,
+    		"Satellite": satellite
+		};
+
+	var baseMaps2 = {
+  			"Dark": dark,
+    		"Streets": osm,
+    		"Satellite": satellite
+		};
+
+
+	var legend = L.control({position: 'bottomright'});
+	legend.onAdd = function(map){
+		var div = L.DomUtil.create('div', 'legend');
+		var labels = [
+		"0-20 min",
+		"20-40 min",
+		"40-60 min",
+		"60-80 min",
+		"80-100 min",
+		"100-120 min"
+		];
+		for (var i = 0; i < labels.length; i++) {
+			div.innerHTML += "<div class='color' id=c"+i+">"+"</div><span>" + labels[i]+"</span><br>";
+		}
+
+		return div;
+	}
+
+	legend.addTo(map);
+	legend.addTo(histMap);
+
+	L.control.layers(baseMaps).addTo(map);
+	L.control.layers(baseMaps2).addTo(histMap);
+
+	var markerGroup = L.layerGroup();
+	//получение данных с сервера
+
+
+	$("#th_type").submit(function(){
+		var str =$(this).serialize();
+		$.ajax({
+			url: '/request',
+			data: str,
+           	cache: false,
+           	contentType: false,
+           	processData: false,
+			type: "get",
+			success: function(data, status) {
+				console.log(data);
+				markerGroup.clearLayers();
+				if ( data.length != 0 ) {
+					for (var i=0; i < data.length; i++){
+					lat=data[i].LATITUDE;
+					long=data[i].LONGITUDE;
+					L.marker([lat, long],{icon: getIconType(data[i].TIMES, $("#datetimepicker").val(), data[i].PEAKCURRENT)}).addTo(markerGroup);
+					}
+				}
+
+				markerGroup.addTo(histMap);
+			}
+		});
+		return false;
+	});
+
+
+
+	//календарик, взят с http://xdsoft.net/jqplugins/datetimepicker/
+
+	jQuery('#datetimepicker').datetimepicker({
+		timepicker: true,
+		formatDate:'Y/m/d',
+		minDate:'2016/08/11', //первые данные в базе
+		maxDate:'+1970/01/01'//today
+	});
+
+	function getType(numType) {
+		if (numType==1){
+			return "Intra Cloud";
+		} else if(numType==0) {
+			return "Cloud-to-Ground";
+		}
+
+	}
+
+	</script>
+
+</body>
+</html>

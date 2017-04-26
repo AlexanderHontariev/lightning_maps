@@ -6,13 +6,15 @@ var bodyParser = require('body-parser');
 var fb = require('node-firebird');
 var templating = require('consolidate');
 
+
 //var index = require('./routes/index');
+
 
 var app = express();
 
+
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-
 //var jsonParser = bodyParser.json();
 //var urlencodedParser = bodyParser.urlencoded({ extended: false });
 
@@ -23,11 +25,14 @@ app.set('views', path.join(__dirname, 'views'));
 app.use(express.static(path.join(__dirname, 'public')));
             //'lat' : 45.000,
 
+
+
 app.get('/', require('./models/firebird').get);
 
 app.get('/mainReq', require('./models/firebird').get);
 
-app.get('/history', function(req, res, next) {
+
+app.get('/history', function(req, res, next){
 	res.render('history', {date: new Date()});
 });
 

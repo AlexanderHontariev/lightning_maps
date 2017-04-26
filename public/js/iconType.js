@@ -1,9 +1,8 @@
 function getIconType(timeStartStr, timeEndStr, type) {
-
 	var timeStart = Date.parse(timeStartStr);
 	var timeEnd = Date.parse(timeEndStr);
-	var timezone = new Date(timeEndStr).getTimezoneOffset();
-	var timeDif =  timeEnd - timeStart + (timezone*60*1000); //разница между локальным временем и гринвичем
+	//var timezone = new Date(timeStartStr).getTimezoneOffset();
+	var timeDif =  timeEnd - timeStart;// - (timezone*60*1000); //разница между локальным временем и гринвичем
 	var Url = "";
 
 	console.log(timeDif);
