@@ -10,13 +10,13 @@
   "license": "ISC",
   "dependencies": {
     "async": "^2.1.4",
-    "body-parser": "^1.15.2",
+    "body-parser": "^1.17.1",
     "consolidate": "^0.14.5",
-    "express": "^4.14.0",
+    "express": "^4.15.2",
     "handlebars": "^4.0.6",
     "mysql": "^2.13.0",
     "nconf": "^0.8.4",
-    "node-firebird": "^0.7.5",
-    "request": "^2.79.0"
+    "node-firebird": "^0.7.6",
+    "request": "^2.81.0"
   }
 }
