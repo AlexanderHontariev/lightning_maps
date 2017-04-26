@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>Thunder</title>
+
+	<link rel="stylesheet" href="styles/style.css" />
+	<link rel="stylesheet" href="lib/leaflet/leaflet.css" />
+	<link rel="stylesheet" type="text/css" href="lib/datetimepicker/jquery.datetimepicker.css"/ >
+	
+
+	<script src="js/jquery.js"></script>
+	<script src="lib/datetimepicker/build/jquery.datetimepicker.full.min.js"></script>
+
+	<script src="lib/leaflet/leaflet.js" type="text/javascript"></script>
+	<!--[if lte IE 8]>
+    	<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.ie.css" />
+    <![endif]-->
+	<script src="lib/Leaflet.CanvasLayer/leaflet_canvas_layer.js" type="text/javascript"></script>
+	
+	<script src="js/iconType.js"></script>	
+	<script src="js/mapStyle.js"></script>
+
+</head>
+<body>
+	<div class="info-1">
+		<div class="link"><a href="/history">История</a></div>
+		<div id="date"></div>
+	</div>
+	<div id="mapid"></div>
+
+	
+	<script>
+	var date = new Date('{{date}}');
+	document.getElementById('date').innerHTML = date.toUTCString();
+	
+	var map = L.map('mapid', {
+			center: [49.00, 31.00],
+			zoom: 6,
+			minZoom:5,
+			maxZoom:12,
+			maxBounds:([[20, -30],[70,90]]),
+			layers: [satellite]
+		});
+
+
+	var baseMaps = {
+  			"Dark": dark,
+    		"Streets": outdoor,
+    		"Satellite": satellite
+		};
+
+	L.control.layers(baseMaps).addTo(map);
+
+	var legend = L.control({position: 'bottomright'});
+	legend.onAdd = function(map){
+		var div = L.DomUtil.create('div', 'legend');
+		var labels = [
+		"0-20 min",
+		"20-40 min",
+		"40-60 min",
+		"60-80 min",
+		"80-100 min",
+		"100-120 min"
+		];
+		for (var i = 0; i < labels.length; i++) {
+			div.innerHTML += "<div class='color' id=c"+i+">"+"</div><span>" + labels[i]+"</span><br>";
+		}
+
+		return div;
+	}
+
+	legend.addTo(map);
+
+	//var dataObj = JSON.parse('{{{data}}}');
+	var markerGroup = L.layerGroup();
+	//получение данных с сервера
+
+	$(document).ready(setInterval(function(){
+		date = new Date();
+		document.getElementById('date').innerHTML = date.toUTCString();
+		var str =$(this).serialize();
+		$.ajax({
+			url: '/mainReq',
+      		cache: false,
+      		contentType: false,
+      		processData: false,
+			type: "get",
+			success: function(data, status) {
+				markerGroup.clearLayers();
+				if ( data.length != 0 ) {
+					for (var i=0; i < data.length; i++){
+					lat=data[i].LATITUDE;
+					long=data[i].LONGITUDE;
+					L.marker([lat, long],{icon: getIconType(data[i].TIMES, new Date(), data[i].PEAKCURRENT)}).addTo(markerGroup);
+					}
+				}
+				markerGroup.addTo(map);
+			} 
+		});
+	},60000));  
+
+	//календарик
+
+	jQuery('#datetimepicker').datetimepicker({
+		timepicker: true,
+		formatDate:'Y/m/d',
+		maxDate:'+1970/01/01'//today
+	});
+
+	function getType(numType) {
+		if (numType==1){
+			return "Intra Cloud";
+		} else if(numType==0) {
+			return "Cloud-to-Ground";
+		}
+
+	}
+
+	</script>
+	
+
+</body>
+</html>
